@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSettingsStore, type ThemeMode } from '../state/settingsStore';
+import { GameButton } from '../ui/GameButton';
 import { ScreenBackground } from '../ui/ScreenBackground';
 import { useAppTheme, useThemeTokens } from '../ui/ThemeProvider';
 
@@ -83,13 +84,12 @@ export default function SettingsScreen() {
       </View>
 
       <View style={styles.footer}>
-        <Pressable
+        <GameButton
+          title="Retour"
+          variant="secondary"
           onPress={() => router.back()}
-          accessibilityRole="button"
           accessibilityLabel="Retour"
-          style={[styles.back, { borderColor: dark ? '#8FB5A3' : '#4F7A6A' }]}>
-          <Text style={[styles.backText, { color: dark ? '#A9CBBD' : '#3E6355' }]}>Retour</Text>
-        </Pressable>
+        />
       </View>
     </SafeAreaView>
   );
@@ -154,15 +154,5 @@ const styles = StyleSheet.create({
   footer: {
     alignItems: 'center',
     paddingBottom: 12,
-  },
-  back: {
-    paddingHorizontal: 28,
-    paddingVertical: 12,
-    borderRadius: 24,
-    borderWidth: 1,
-  },
-  backText: {
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

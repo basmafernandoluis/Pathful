@@ -19,18 +19,37 @@ export type ThemeTokens = {
   fontDisplay: string | undefined;
   /** Chiffres secondaires (Nunito Bold) — undefined tant que la fonte charge. */
   fontBold: string | undefined;
+  /** Bouton principal : fond plein. */
+  accent: string;
+  /** Texte sur fond accent. */
+  accentInk: string;
+  /** Bouton secondaire : fond plein neutre. */
+  surface: string;
+  /** Texte sur fond neutre. */
+  surfaceInk: string;
 };
 
-const TOKENS: Record<'light' | 'dark', Omit<ThemeTokens, 'scheme' | 'fontDisplay' | 'fontBold'>> = {
+const TOKENS: Record<
+  'light' | 'dark',
+  Omit<ThemeTokens, 'scheme' | 'fontDisplay' | 'fontBold'>
+> = {
   light: {
     bgTop: '#F7F4EC',
     bgBottom: '#E7DFCC',
     grainOpacity: 0.05,
+    accent: '#4F7A6A',
+    accentInk: '#FFFFFF',
+    surface: '#E7DFCC',
+    surfaceInk: '#2E2C28',
   },
   dark: {
     bgTop: '#232B36',
     bgBottom: '#0B1114',
     grainOpacity: 0.04,
+    accent: '#7FA88F',
+    accentInk: '#10140F',
+    surface: '#2C333D',
+    surfaceInk: '#ECE7DB',
   },
 };
 

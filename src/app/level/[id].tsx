@@ -2,7 +2,7 @@
 // Le plateau (GridCanvas + geste) arrive à la phase suivante.
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { remainingTiles } from '../../logic/gameplay-rules';
 import { getHintForHead } from '../../logic/hint';
@@ -11,6 +11,7 @@ import { logHintUsed, logLevelComplete, logLevelStart } from '../../services/ana
 import { LEVELS, levelById } from '../../services/levels';
 import { useGameStore } from '../../state/gameStore';
 import { useSettingsStore } from '../../state/settingsStore';
+import { GameButton } from '../../ui/GameButton';
 import { GridCanvas } from '../../ui/GridCanvas';
 import { ScreenBackground } from '../../ui/ScreenBackground';
 import { useAppTheme, useThemeTokens } from '../../ui/ThemeProvider';
@@ -96,31 +97,27 @@ export default function LevelPlaceholderScreen() {
             )}
             {!solved && (
               <View style={styles.hintRow}>
-                <Pressable
+                <GameButton
+                  title="Indice"
+                  small
+                  variant="secondary"
                   onPress={() => {
                     if (level) showFreeHint(level.id);
                   }}
-                  accessibilityRole="button"
                   accessibilityLabel="Révéler le prochain pas"
-                  style={[styles.hint, { borderColor: dark ? '#8FB5A3' : '#4F7A6A' }]}>
-                  <Text style={[styles.hintText, { color: dark ? '#A9CBBD' : '#3E6355' }]}>
-                    Indice
-                  </Text>
-                </Pressable>
-                <Pressable
+                />
+                <GameButton
+                  title={hintLoading ? 'Chargement…' : 'Indice (pub)'}
+                  small
+                  variant="primary"
+                  disabled={hintLoading}
                   onPress={() => {
                     if (!level || hintLoading) return;
                     setHintLoading(true);
                     void showRewardedForHint(level.id).finally(() => setHintLoading(false));
                   }}
-                  disabled={hintLoading}
-                  accessibilityRole="button"
                   accessibilityLabel="Regarder une publicité pour révéler le chemin restant"
-                  style={[styles.hint, { borderColor: dark ? '#8FB5A3' : '#4F7A6A' }]}>
-                  <Text style={[styles.hintText, { color: dark ? '#A9CBBD' : '#3E6355' }]}>
-                    {hintLoading ? 'Chargement…' : 'Indice (pub)'}
-                  </Text>
-                </Pressable>
+                />
               </View>
             )}
           </View>
@@ -134,24 +131,18 @@ export default function LevelPlaceholderScreen() {
             )}
           </View>
           <View style={styles.buttons}>
-            <Pressable
+            <GameButton
+              title="Recommencer"
+              variant="primary"
               onPress={reset}
-              accessibilityRole="button"
               accessibilityLabel="Recommencer le niveau"
-              style={[styles.button, { borderColor: dark ? '#8FB5A3' : '#4F7A6A' }]}>
-              <Text style={[styles.backText, { color: dark ? '#A9CBBD' : '#3E6355' }]}>
-                Recommencer
-              </Text>
-            </Pressable>
-            <Pressable
+            />
+            <GameButton
+              title="Retour"
+              variant="secondary"
               onPress={() => router.back()}
-              accessibilityRole="button"
               accessibilityLabel="Retour à la sélection"
-              style={[styles.button, { borderColor: dark ? '#8FB5A3' : '#4F7A6A' }]}>
-              <Text style={[styles.backText, { color: dark ? '#A9CBBD' : '#3E6355' }]}>
-                Retour
-              </Text>
-            </Pressable>
+            />
           </View>
         </>
       ) : (
@@ -159,13 +150,14 @@ export default function LevelPlaceholderScreen() {
           <Text style={[styles.title, { color: dark ? '#ECE7DB' : '#2E2C28' }]}>
             Niveau introuvable
           </Text>
-          <Pressable
-            onPress={() => router.back()}
-            accessibilityRole="button"
-            accessibilityLabel="Retour à la sélection"
-            style={[styles.back, { borderColor: dark ? '#8FB5A3' : '#4F7A6A' }]}>
-            <Text style={[styles.backText, { color: dark ? '#A9CBBD' : '#3E6355' }]}>Retour</Text>
-          </Pressable>
+          <View style={styles.notFoundBack}>
+            <GameButton
+              title="Retour"
+              variant="secondary"
+              onPress={() => router.back()}
+              accessibilityLabel="Retour à la sélection"
+            />
+          </View>
         </View>
       )}
     </SafeAreaView>
@@ -210,26 +202,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingBottom: 12,
   },
-  button: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
-    borderWidth: 1,
-  },
   hintRow: {
     marginTop: 8,
     flexDirection: 'row',
     gap: 8,
-  },
-  hint: {
-    paddingHorizontal: 18,
-    paddingVertical: 8,
-    borderRadius: 18,
-    borderWidth: 1,
-  },
-  hintText: {
-    fontSize: 14,
-    fontWeight: '600',
   },
   solved: {
     marginTop: 8,
@@ -244,15 +220,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
   },
-  back: {
+  notFoundBack: {
     marginTop: 28,
-    paddingHorizontal: 28,
-    paddingVertical: 12,
-    borderRadius: 24,
-    borderWidth: 1,
-  },
-  backText: {
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

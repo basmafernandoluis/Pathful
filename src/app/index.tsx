@@ -1,10 +1,11 @@
 import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Level } from '../logic/types';
 import { LEVELS } from '../services/levels';
 import { useSettingsStore } from '../state/settingsStore';
 import { AdBanner } from '../ui/AdBanner';
+import { GameButton } from '../ui/GameButton';
 import { JourneyPath } from '../ui/JourneyPath';
 import { ScreenBackground } from '../ui/ScreenBackground';
 import { useAppTheme, useThemeTokens } from '../ui/ThemeProvider';
@@ -29,15 +30,13 @@ export default function LevelSelectScreen() {
             style={[styles.title, { color: dark ? '#ECE7DB' : '#2E2C28', fontFamily: fontDisplay }]}>
             Niveaux
           </Text>
-          <Pressable
+          <GameButton
+            title="Réglages"
+            small
+            variant="secondary"
             onPress={() => router.push('/settings')}
-            accessibilityRole="button"
             accessibilityLabel="Ouvrir les réglages"
-            style={[styles.gear, { borderColor: dark ? '#8FB5A3' : '#4F7A6A' }]}>
-            <Text style={[styles.gearText, { color: dark ? '#A9CBBD' : '#3E6355' }]}>
-              Réglages
-            </Text>
-          </Pressable>
+          />
         </View>
         <Text style={[styles.subtitle, { color: dark ? '#8E8878' : '#8A867C' }]}>
           {completedIds.length} niveau{completedIds.length > 1 ? 'x' : ''} terminé
@@ -72,18 +71,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-  },
-  gear: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gearText: {
-    fontSize: 14,
-    fontWeight: '600',
   },
   subtitle: {
     marginTop: 4,
