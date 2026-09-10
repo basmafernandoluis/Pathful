@@ -1,98 +1,97 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import type { Level } from '../logic/types';
+import { LEVELS } from '../services/levels';
+import { useSettingsStore } from '../state/settingsStore';
+import { AdBanner } from '../ui/AdBanner';
+import { JourneyPath } from '../ui/JourneyPath';
+import { ScreenBackground } from '../ui/ScreenBackground';
+import { useAppTheme, useThemeTokens } from '../ui/ThemeProvider';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+export default function LevelSelectScreen() {
+  const router = useRouter();
+  const scheme = useAppTheme();
+  const { bgTop } = useThemeTokens();
+  const dark = scheme === 'dark';
+  const completedIds = useSettingsStore((s) => s.completedIds);
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+  const openLevel = (level: Level) => {
+    router.push({ pathname: '/level/[id]', params: { id: level.id } });
+  };
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
-
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
-
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
-
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+    <SafeAreaView style={[styles.safe, { backgroundColor: bgTop }]} edges={['top', 'bottom']}>
+      <ScreenBackground />
+      <View style={styles.header}>
+        <View style={styles.titleRow}>
+          <Text style={[styles.title, { color: dark ? '#ECE7DB' : '#2E2C28' }]}>Niveaux</Text>
+          <Pressable
+            onPress={() => router.push('/settings')}
+            accessibilityRole="button"
+            accessibilityLabel="Ouvrir les réglages"
+            style={[styles.gear, { borderColor: dark ? '#8FB5A3' : '#4F7A6A' }]}>
+            <Text style={[styles.gearText, { color: dark ? '#A9CBBD' : '#3E6355' }]}>
+              Réglages
+            </Text>
+          </Pressable>
+        </View>
+        <Text style={[styles.subtitle, { color: dark ? '#8E8878' : '#8A867C' }]}>
+          {completedIds.length} niveau{completedIds.length > 1 ? 'x' : ''} terminé
+          {completedIds.length > 1 ? 's' : ''}
+        </Text>
+      </View>
+      <View style={styles.path}>
+        <JourneyPath levels={LEVELS} completedIds={completedIds} onSelect={openLevel} />
+      </View>
+      {/* Bannière AdMob : sélection uniquement, jamais pendant un plateau. */}
+      <View style={styles.banner}>
+        <AdBanner />
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safe: {
     flex: 1,
-    justifyContent: 'center',
+  },
+  header: {
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  titleRow: {
     flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
     alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+    justifyContent: 'space-between',
   },
   title: {
-    textAlign: 'center',
+    fontSize: 28,
+    fontWeight: '700',
   },
-  code: {
-    textTransform: 'uppercase',
+  gear: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  gearText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  subtitle: {
+    marginTop: 4,
+    fontSize: 14,
+  },
+  path: {
+    flex: 1,
+  },
+  banner: {
+    minHeight: 56,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
   },
 });
