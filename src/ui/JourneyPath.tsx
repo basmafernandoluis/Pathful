@@ -34,6 +34,8 @@ type Palette = {
   currentText: string;
   lockedFill: string;
   lockedText: string;
+  /** Halo discret du nœud jouable suivant (identité Pathful). */
+  glow: string;
 };
 
 const PALETTES: Record<'light' | 'dark', Palette> = {
@@ -50,6 +52,7 @@ const PALETTES: Record<'light' | 'dark', Palette> = {
     currentText: '#3E6355',
     lockedFill: '#E7E2D4',
     lockedText: '#AAA496',
+    glow: '#4F7A6A40',
   },
   dark: {
     background: '#161511',
@@ -64,6 +67,7 @@ const PALETTES: Record<'light' | 'dark', Palette> = {
     currentText: '#A9CBBD',
     lockedFill: '#23211C',
     lockedText: '#5D594E',
+    glow: '#8FB5A338',
   },
 };
 
@@ -99,6 +103,9 @@ function NodeItem({
     }
   }, [celebrate, scale]);
 
+  const isCurrent = state === 'current';
+  const isDone = state === 'done';
+
   return (
     <Animated.View
       style={[
@@ -108,18 +115,31 @@ function NodeItem({
           height: size,
           borderRadius: size / 2,
           left,
-          backgroundColor:
-            state === 'done'
-              ? palette.doneFill
-              : state === 'current'
-                ? palette.currentFill
-                : palette.lockedFill,
-          borderWidth: state === 'current' ? 3 : 0,
+          backgroundColor: isDone
+            ? palette.doneFill
+            : isCurrent
+              ? palette.currentFill
+              : palette.lockedFill,
+          borderWidth: isCurrent ? 3 : 0,
           borderColor: palette.currentRing,
           opacity: locked ? 0.75 : 1,
+          // Halo discret du nœud jouable suivant (statique, sobre).
+          boxShadow: isCurrent ? `0 0 28px ${palette.glow}` : undefined,
         },
         animatedStyle,
       ]}>
+      {isCurrent && (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            width: size * 1.32,
+            height: size * 1.32,
+            borderRadius: (size * 1.32) / 2,
+            backgroundColor: palette.glow,
+          }}
+        />
+      )}
       <Pressable
         disabled={locked}
         onPress={onPress}
@@ -130,18 +150,23 @@ function NodeItem({
           style={[
             styles.number,
             {
-              color:
-                state === 'done'
-                  ? palette.doneText
-                  : state === 'current'
-                    ? palette.currentText
-                    : palette.lockedText,
+              color: isDone ? palette.doneText : isCurrent ? palette.currentText : palette.lockedText,
               fontFamily,
             },
           ]}>
           {index + 1}
         </Text>
       </Pressable>
+      {isDone && (
+        <View
+          pointerEvents="none"
+          style={[
+            styles.doneBadge,
+            { backgroundColor: palette.currentRing, borderColor: palette.doneFill },
+          ]}>
+          <Text style={[styles.doneCheck, { color: palette.doneText }]}>✓</Text>
+        </View>
+      )}
     </Animated.View>
   );
 }
@@ -205,11 +230,15 @@ export function JourneyPath({ levels, completedIds, onSelect }: Props) {
               style={[
                 styles.connector,
                 {
-                  width: TRACK_W,
+                  width: 0,
                   height: len,
                   left: cx + (xs[i] + xs[i + 1]) / 2 - TRACK_W / 2,
                   top: (centerY(i) + centerY(i + 1)) / 2 - len / 2,
-                  backgroundColor: done ? palette.trackDone : palette.trackTodo,
+                  backgroundColor: 'transparent',
+                  borderRadius: 0,
+                  borderStyle: 'dashed',
+                  borderLeftWidth: TRACK_W,
+                  borderColor: done ? palette.trackDone : palette.trackTodo,
                   transform: [{ rotate: `${angle}deg` }],
                 },
               ]}
@@ -285,6 +314,22 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  doneBadge: {
+    position: 'absolute',
+    right: -4,
+    top: -4,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  doneCheck: {
+    fontSize: 12,
+    fontWeight: '700',
+    lineHeight: 14,
   },
   number: {
     fontSize: 20,
