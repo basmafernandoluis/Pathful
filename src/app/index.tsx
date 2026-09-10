@@ -12,7 +12,7 @@ import { useAppTheme, useThemeTokens } from '../ui/ThemeProvider';
 export default function LevelSelectScreen() {
   const router = useRouter();
   const scheme = useAppTheme();
-  const { bgTop } = useThemeTokens();
+  const { bgTop, fontDisplay } = useThemeTokens();
   const dark = scheme === 'dark';
   const completedIds = useSettingsStore((s) => s.completedIds);
 
@@ -25,7 +25,10 @@ export default function LevelSelectScreen() {
       <ScreenBackground />
       <View style={styles.header}>
         <View style={styles.titleRow}>
-          <Text style={[styles.title, { color: dark ? '#ECE7DB' : '#2E2C28' }]}>Niveaux</Text>
+          <Text
+            style={[styles.title, { color: dark ? '#ECE7DB' : '#2E2C28', fontFamily: fontDisplay }]}>
+            Niveaux
+          </Text>
           <Pressable
             onPress={() => router.push('/settings')}
             accessibilityRole="button"

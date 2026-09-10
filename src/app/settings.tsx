@@ -14,7 +14,7 @@ const THEME_CHOICES: Array<{ mode: ThemeMode; label: string }> = [
 export default function SettingsScreen() {
   const router = useRouter();
   const scheme = useAppTheme();
-  const { bgTop } = useThemeTokens();
+  const { bgTop, fontDisplay } = useThemeTokens();
   const dark = scheme === 'dark';
   const s = useSettingsStore();
 
@@ -30,7 +30,7 @@ export default function SettingsScreen() {
     <SafeAreaView style={[styles.safe, { backgroundColor: bgTop }]} edges={['top', 'bottom']}>
       <ScreenBackground />
       <View style={styles.header}>
-        <Text style={[styles.title, ink]}>Réglages</Text>
+        <Text style={[styles.title, ink, { fontFamily: fontDisplay }]}>Réglages</Text>
       </View>
 
       <View style={styles.body}>

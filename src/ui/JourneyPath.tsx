@@ -12,7 +12,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import type { Level } from '../logic/types';
 import { currentLevelIndex, levelStateAt, type LevelState } from '../services/levels';
-import { useAppTheme } from './ThemeProvider';
+import { useThemeTokens } from './ThemeProvider';
 
 const ROW_H = 92;
 const NODE = 58;
@@ -76,6 +76,7 @@ function NodeItem({
   palette,
   locked,
   celebrate,
+  fontFamily,
   onPress,
 }: {
   index: number;
@@ -86,6 +87,7 @@ function NodeItem({
   locked: boolean;
   /** True pour le seul nœud nouvellement débloqué : rebond à l'apparition. */
   celebrate: boolean;
+  fontFamily: string | undefined;
   onPress: () => void;
 }) {
   const scale = useSharedValue(celebrate ? 0 : 1);
@@ -134,6 +136,7 @@ function NodeItem({
                   : state === 'current'
                     ? palette.currentText
                     : palette.lockedText,
+              fontFamily,
             },
           ]}>
           {index + 1}
@@ -150,7 +153,7 @@ type Props = {
 };
 
 export function JourneyPath({ levels, completedIds, onSelect }: Props) {
-  const scheme = useAppTheme();
+  const { scheme, fontDisplay } = useThemeTokens();
   const palette = PALETTES[scheme];
   const { width } = useWindowDimensions();
   const amp = Math.min(96, width * 0.28);
@@ -229,6 +232,7 @@ export function JourneyPath({ levels, completedIds, onSelect }: Props) {
                 palette={palette}
                 locked={locked}
                 celebrate={i === firstCurrent}
+                fontFamily={fontDisplay}
                 onPress={() => onSelect(level)}
               />
               {!locked && (

@@ -35,7 +35,7 @@ function showFreeHint(levelId: string): void {
 export default function LevelPlaceholderScreen() {
   const router = useRouter();
   const scheme = useAppTheme();
-  const { bgTop } = useThemeTokens();
+  const { bgTop, fontDisplay } = useThemeTokens();
   const dark = scheme === 'dark';
   const { id } = useLocalSearchParams<{ id: string }>();
 
@@ -76,7 +76,8 @@ export default function LevelPlaceholderScreen() {
       {level && index >= 0 ? (
         <>
           <View style={styles.header}>
-            <Text style={[styles.title, { color: dark ? '#ECE7DB' : '#2E2C28' }]}>
+            <Text
+              style={[styles.title, { color: dark ? '#ECE7DB' : '#2E2C28', fontFamily: fontDisplay }]}>
               Niveau {index + 1}
             </Text>
             <Text style={[styles.meta, { color: dark ? '#8E8878' : '#8A867C' }]}>

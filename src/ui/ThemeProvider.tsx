@@ -1,7 +1,9 @@
 // Thème effectif : le réglage sauvegardé prime, 'system' suit l'OS.
 // Les écrans utilisent useAppTheme() au lieu de useColorScheme() directement
 // pour que le choix Clair/Sombre de l'écran réglages s'applique partout.
-// Identité Pathful : fond en dégradé subtil + grain, jamais de noir plat.
+// Identité Pathful : fond en dégradé subtil + grain, jamais de noir plat ;
+// typo ronde (Nunito) pour titres et chiffres, corps en police système.
+import { Nunito_700Bold, Nunito_800ExtraBold, useFonts } from '@expo-google-fonts/nunito';
 import { createContext, useContext, type ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
 import { useSettingsStore } from '../state/settingsStore';
@@ -13,9 +15,13 @@ export type ThemeTokens = {
   bgBottom: string;
   /** Opacité du grain (ScreenBackground). */
   grainOpacity: number;
+  /** Titres et chiffres (Nunito ExtraBold) — undefined tant que la fonte charge. */
+  fontDisplay: string | undefined;
+  /** Chiffres secondaires (Nunito Bold) — undefined tant que la fonte charge. */
+  fontBold: string | undefined;
 };
 
-const TOKENS: Record<'light' | 'dark', Omit<ThemeTokens, 'scheme'>> = {
+const TOKENS: Record<'light' | 'dark', Omit<ThemeTokens, 'scheme' | 'fontDisplay' | 'fontBold'>> = {
   light: {
     bgTop: '#F7F4EC',
     bgBottom: '#E7DFCC',
@@ -46,8 +52,16 @@ export function useAppTheme(): 'light' | 'dark' {
   return useContext(ThemeCtx);
 }
 
-/** Tokens visuels du thème courant (fond, grain, puis typo/boutons). */
+/** Tokens visuels du thème courant (fond, grain, typo). */
 export function useThemeTokens(): ThemeTokens {
   const scheme = useAppTheme();
-  return { scheme, ...TOKENS[scheme] };
+  // Chargée une fois ici (racine du thème) : les consommateurs appliquent
+  // fontDisplay/fontBold quand définis, sinon la police système (pas de blocage).
+  const [fontsLoaded] = useFonts({ Nunito_700Bold, Nunito_800ExtraBold });
+  return {
+    scheme,
+    ...TOKENS[scheme],
+    fontDisplay: fontsLoaded ? 'Nunito_800ExtraBold' : undefined,
+    fontBold: fontsLoaded ? 'Nunito_700Bold' : undefined,
+  };
 }
