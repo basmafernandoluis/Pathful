@@ -139,17 +139,26 @@ eas build --platform android --profile development|preview|production
 - ✅ Identité Pathful (`identite-visuelle-pathful.md`, 4 commits revert-ables) :
   fond dégradé Skia + grain (`ScreenBackground`, `assets/images/grain.png` via
   `scripts/generate-grain.js`), typo Nunito titres/chiffres (`@expo-google-fonts/nunito`,
-  fallback système), `GameButton` partagé (plein + ombre, press 0.97, primary/secondary),
-  journey (halo nœud courant, connecteurs pointillés, badge ✓). Tokens dans
+  fallback système), `GameButton` partagé (plein + ombre, press 0.97, primary/secondary,
+  variante icône seule `@expo/vector-icons` : nav secondaire en bandeau compact, une seule
+  action texte par écran + « Indice (pub) » en texte),
+  journey (halo nœud courant, connecteurs pointillés, badge ★ doré si 3 étoiles). Tokens dans
   `ThemeProvider` (`useThemeTokens`). Plateau de jeu exclu (hors périmètre).
+- ✅ Icône/splash Pathful (motif « chemin + tête », `scripts/generate-icon.js` procédural :
+  `icon.png`, adaptive icons, `splash-icon.png`, `favicon.png` — vérifiés visuellement).
+- ✅ Politique de confidentialité `docs/privacy-policy.html` (FR + résumé EN, sans trackers).
+  Remote `origin` → `github.com/basmafernandoluis/Pathful` (repo vide). Reste à activer
+  Pages (`main` / `/docs`) puis pousser.
 - ✅ `GridCanvas` interactif (geste en **worklet thread UI** : `pointToCell` worklet +
   `layoutSV`/`lastCellSV`, `runOnJS` vers le store **uniquement sur transition de case**,
   ordre préservé → `canExtend`/`extend`/`reelBackTo`/`isLevelSolved` uniquement,
   `Haptics.impactAsync(Light)` par pas **en fire-and-forget (jamais d'await
-  dans `onUpdate`)**, `SnakePaths`/`BoardGrid`/chiffres mémoïsés — seul le snake actif
-  reconstruit son `SkPath` par pas). `zustand` + `expo-haptics` installés. Sons courts
-  préchargés au montage (`initAudio()` dans `_layout.tsx`, `seekTo(0)+play()` à l'usage,
-  repli lazy). `src/app/level/[id].tsx` charge le niveau, affiche « résolu » +
+  dans `onUpdate`)**,   `SnakePaths`/`BoardGrid`/chiffres mémoïsés — snake actif en append O(1) via
+  `PathBuilder` persistant (`build()` sans reset, rebuild si divergence).
+  `zustand` + `expo-haptics` installés. Sons courts préchargés au montage
+  (`initAudio()` dans `_layout.tsx`, `seekTo(0)+play()` **non chaînés** à l'usage —
+  `play()` est synchrone, ne jamais revenir à `.then(() => play())`, repli lazy).
+  `src/app/level/[id].tsx` charge le niveau, affiche « résolu » +
   Recommencer. Skia 2.6.2 → dev build EAS requis.
 - ✅ `expo-dev-client` installé, `expo-doctor` 21/21. Test sur téléphone =
   build de dev local (`npx expo run:android`), Android Studio/SDK/adb présents.
@@ -163,7 +172,8 @@ eas build --platform android --profile development|preview|production
   via `expo-audio` (`src/services/audio.ts`), `Haptics.notificationAsync(Success)`.
 - ✅ Juice #2 « victoire » : zoom-pulse plateau (`withSpring(1.03)`), vague Skia +
   10 particules (`src/ui/VictoryOverlay.tsx`), carillon `assets/sounds/victory.wav`,
-  stats en cascade coups/indices (`src/ui/VictoryStats.tsx`, `moves`/`hintsUsed` du store).
+  carte étoiles héro (`src/ui/VictoryStats.tsx` : ★ pop une par une + clochette chacune,
+  silhouettes grises, titre Nunito, coups/indices en secondaire, radius 28 + ombre).
   `SkPath.lineTo` déprécié migré vers `Skia.PathBuilder` (plus de warning).
 - ✅ Juice #3 « compteur tuiles » : `TileCounter.tsx` interpole `remainingTiles()`
   vers la cible (pas de 45 ms, max ~450 ms, chiffres tabulaires), câblé dans l'en-tête
@@ -182,10 +192,21 @@ eas build --platform android --profile development|preview|production
   l'utilisateur (remplace la nappe générée, jugée dérangeante), `startAmbient()`
   (`loop`, volume 0.18) au montage du layout racine, `stopAmbient()` réservé
   aux réglages phase 6.
+- ✅ Juice #8 « frottement de tracé » : `assets/sounds/zip-loop.wav` en boucle
+  (8 s reconstruites depuis `zip.mp3` 0,5 s sans tag gapless via
+  `scripts/make-trace-loop.py` — tuilage + crossfade, jonction vérifiée sans clic),
+  `startTraceLoop`/`stopTraceLoop`/`setTraceProgress`, volume 0.22, pitch 0.9→1.3
+  (via `setPlaybackRate()` + `shouldCorrectPitch=false` — `playbackRate = x`
+  n'a pas de setter natif)
+  sur remplissage du snake actif — le reel-back fait redescendre), démarrée en
+  `jsBegin` (si `activeId` + son ON), coupée en `jsEnd` + `setSound(false).
 - ✅ Sauvegarde locale (`expo-sqlite` kv `game.db`, `src/services/storage.ts` +
   `storage.web.ts` localStorage, `src/state/settingsStore.ts` zustand) :
   complétés, thème (`system`/`light`/`dark` via `ThemeProvider`, écrans migrés
-  vers `useAppTheme`), son/musique/vibration, indices par niveau. Sélection
+  vers `useAppTheme`), son/musique/vibration, indices par niveau, étoiles
+  (`computeStars` optimal=somme `head.number`, `setStars` garde le max),
+  palette plateau (`src/ui/boardPalettes.ts` pur : Classique/Forêt/Brume/Crépuscule,
+  déblocage à 0/10/20/30 complétés, `setBoardPalette` garde-fou, choix en Réglages). Sélection
   branchée (`levelStateAt` réel : 5 premiers + précédent complété, complétion
   auto en `endStroke`), écran `src/app/settings.tsx` avec toggles câblés
   (musique ⇄ nappe, son ⇄ cloches, vibration ⇄ haptique). 100 % local.
@@ -197,20 +218,28 @@ eas build --platform android --profile development|preview|production
   play-services-ads 25.4.0, métadonnées Kotlin 2.3 — le 2.1 du template fait
   échouer `:react-native-google-mobile-ads:compileDebugKotlin`).
   ⚠️ Ça ne suffit PAS : la propriété ne monte que la stdlib, le compilateur (KGP)
-  reste en 2.1.20 → forcer `classpath('org.jetbrains.kotlin:kotlin-gradle-plugin:2.3.0')`
-  dans `android/build.gradle` (vérifié : `:compileDebugKotlin` OK, `assembleDebug`
-  OK, APK 4 ABI dont `arm64-v8a`). `android/` est gitignoré : après chaque
-  `prebuild --clean`, réappliquer ce pin + l'ordre `mavenCentral()` avant `google()`
-  (contournement temporaire : `dl.google.com` injoignable depuis ce PC).
+  reste en 2.1.20 → plugin local `plugins/withKotlinFix.js` (référencé en dernier
+  dans `app.json`, `withProjectBuildGradle`) qui épingle
+  `classpath('org.jetbrains.kotlin:kotlin-gradle-plugin:2.3.0')` + impose
+  `mavenCentral()` avant `google()` à chaque prebuild (vérifié : prebuild --clean
+  → fichier régénéré conforme → `assembleDebug` OK, APK 4 ABI dont `arm64-v8a`).
+  Plus rien à réappliquer à la main ; si le template change de format, le plugin
+  échoue avec un message explicite (Groovy attendu). `android/` reste gitignoré.
+  Ordre `mavenCentral()` d'abord = contournement temporaire (`dl.google.com`
+  injoignable depuis ce PC).
   `src/services/ads.ts` (+`.web.ts`) : bannière sélection, interstitielle 1/4
-  complétions persistée, récompensée → chemin restant (`solutionPath` slice +
-  cellule d'ancrage, overlay `hintPath` ancre pleine/terminus anneau+point,
-  sans auto-tracé) ; bouton gratuit « Indice » → 1 pas
-  (`getHintForHead`), les deux via `revealHint` + `useHint`.
+  complétions persistée, récompensée → solution COMPLÈTE auto-tracée via
+  `store.applyHintSolution` (tracés adverses en conflit effacés, victoire évaluée,
+  cases comptées dans `moves`) + `useHint`. Pas d'indice gratuit (supprimé),
+  pas d'overlay (`hintPath`/`revealHint` supprimés).
   `src/services/analytics.ts` (+`.web.ts`) : `level_start`,
   `level_complete`, `hint_used`, `ad_impression` + attribut Crashlytics.
   Bouton « Indice (pub) » sur l'écran niveau. `prebuild --clean` rejoué OK
   (package `com.appwizards.pathful`, meta-data AdMob TEST, `google-services.json`
   câblé + plugin `4.4.4`, 4 ABI) — nécessitait `googleServicesFile` dans `app.json`
   + arrêt Metro (verrou EBUSY sur `android/`).
+  Preview sur device : `assembleRelease -PreactNativeArchitectures=arm64-v8a`
+  (APK ~66 Mo arm64 seul, ~21 min, standalone sans Metro — dev-client inclus).
+  Build 4 ABI tué par disque C: plein (`No space left` de clang) → garder ≥ 2 Go
+  libres (`npm cache clean`, TEMP, sous-dossiers `.cxx` non-arm64 supprimables).
 - ⬜ Reste à faire : voir `plan-action-complet.md`, phases 1 à 10.
